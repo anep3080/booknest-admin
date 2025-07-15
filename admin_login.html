@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | BookNest</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> <!-- Link to the external CSS file -->
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-book"></i> <!-- Changed icon for BookNest -->
+                <h2>BookNest Admin Login</h2>
+            </div>
+            <form id="adminLoginForm" action="admin_homepage.php" method="POST">
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" name="username" placeholder="Enter your username or email" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-icon">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full-width">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </button>
+            </form>
+            <div id="loginMessage" class="login-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simple client-side validation and message display
+        document.getElementById('adminLoginForm').addEventListener('submit', function(event) {
+            // Prevent default form submission for demonstration
+            // In a real application, you would send an AJAX request here
+            event.preventDefault(); 
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginMessage = document.getElementById('loginMessage');
+
+            // Basic validation (replace with server-side authentication)
+            if (username === '' || password === '') {
+                loginMessage.textContent = 'Please enter both username/email and password.';
+                loginMessage.style.color = 'var(--danger)';
+            } else {
+                loginMessage.textContent = 'Attempting to log in...';
+                loginMessage.style.color = 'var(--primary)';
+                
+                // Simulate a delay for server response
+                setTimeout(() => {
+                    // For demonstration, let's assume a successful login always
+                    // and redirect to the admin homepage.
+                    window.location.href = 'admin_homepage.html'; 
+                    // In a real scenario, if authentication failed:
+                    // loginMessage.textContent = 'Invalid username or password.';
+                    // loginMessage.style.color = 'var(--danger)';
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>
