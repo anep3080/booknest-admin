@@ -6,17 +6,14 @@
     <title>Admin Login | BookNest</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css"> <!-- Link to the external CSS file -->
-</head>
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <i class="fas fa-book"></i> <!-- Changed icon for BookNest -->
-                <h2>BookNest Admin Login</h2>
+                <i class="fas fa-book"></i> <h2>BookNest Admin Login</h2>
             </div>
-            <form id="adminLoginForm" action="admin_homepage.php" method="POST">
-                <div class="form-group">
+            <form id="adminLoginForm"> <div class="form-group">
                     <label for="username">Username or Email</label>
                     <div class="input-icon">
                         <i class="fas fa-user"></i>
@@ -40,34 +37,47 @@
     </div>
 
     <script>
-        // Simple client-side validation and message display
         document.getElementById('adminLoginForm').addEventListener('submit', function(event) {
-            // Prevent default form submission for demonstration
-            // In a real application, you would send an AJAX request here
             event.preventDefault(); 
 
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('username').value; // Using username for email
             const password = document.getElementById('password').value;
             const loginMessage = document.getElementById('loginMessage');
 
-            // Basic validation (replace with server-side authentication)
-            if (username === '' || password === '') {
+            if (email === '' || password === '') {
                 loginMessage.textContent = 'Please enter both username/email and password.';
                 loginMessage.style.color = 'var(--danger)';
-            } else {
-                loginMessage.textContent = 'Attempting to log in...';
-                loginMessage.style.color = 'var(--primary)';
-                
-                // Simulate a delay for server response
-                setTimeout(() => {
-                    // For demonstration, let's assume a successful login always
-                    // and redirect to the admin homepage.
-                    window.location.href = 'admin_homepage.html'; 
-                    // In a real scenario, if authentication failed:
-                    // loginMessage.textContent = 'Invalid username or password.';
-                    // loginMessage.style.color = 'var(--danger)';
-                }, 1500);
+                return;
             }
+
+            loginMessage.textContent = 'Attempting to log in...';
+            loginMessage.style.color = 'var(--primary)';
+            
+            fetch('api.php?action=login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email, password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loginMessage.textContent = data.message;
+                    loginMessage.style.color = 'var(--success)';
+                    setTimeout(() => {
+                        window.location.href = 'admin_homepage.html'; 
+                    }, 1500);
+                } else {
+                    loginMessage.textContent = data.message;
+                    loginMessage.style.color = 'var(--danger)';
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                loginMessage.textContent = 'An error occurred during login. Please try again.';
+                loginMessage.style.color = 'var(--danger)';
+            });
         });
     </script>
 </body>

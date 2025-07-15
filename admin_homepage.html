@@ -6,23 +6,18 @@
     <title>Admin Dashboard | BookNest</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css"> <!-- Link to the external CSS file -->
-</head>
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
     <div class="admin-container">
         <header class="admin-header">
-            <h1><i class="fas fa-book"></i> BookNest Admin Dashboard</h1> <!-- Changed icon and name -->
-            <div class="admin-info">
-                <span class="admin-name"><i class="fas fa-user-shield"></i> admin</span> <!-- Changed icon for admin -->
-                <button class="btn btn-danger" onclick="window.location.href='logout.php'">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+            <h1><i class="fas fa-book"></i> BookNest Admin Dashboard</h1> <div class="admin-info">
+                <span class="admin-name"><i class="fas fa-user-shield"></i> admin</span> <button class="btn btn-danger" onclick="window.location.href='admin_login.html'"> <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
         </header>
 
         <div class="tab-container">
             <div class="tab-buttons">
-                <!-- Removed Reported Items tab -->
                 <button class="tab-btn active" onclick="showTab('users-tab')">
                     <i class="fas fa-users"></i> Manage Users
                 </button>
@@ -32,7 +27,6 @@
             </div>
         </div>
 
-        <!-- User Management Tab -->
         <div id="users-tab" class="tab-content active">
             <div class="search-export-container">
                 <div class="search-box">
@@ -43,18 +37,16 @@
                     <button class="btn btn-primary" onclick="showAddUserModal()">
                         <i class="fas fa-user-plus"></i> Add User
                     </button>
-                    <form method="POST">
-                        <button type="submit" name="export_users_excel" class="btn btn-success">
-                            <i class="fas fa-file-excel"></i> Export Users
-                        </button>
-                    </form>
+                    <button class="btn btn-success" onclick="exportUsers()">
+                        <i class="fas fa-file-excel"></i> Export Users
+                    </button>
                 </div>
             </div>
 
             <div class="card-container">
                 <div class="card-header">
                     <h2><i class="fas fa-users"></i> Registered Users</h2>
-                    <span class="badge" id="userCountBadge">7 users</span>
+                    <span class="badge" id="userCountBadge"></span>
                 </div>
                 
                 <div class="table-responsive">
@@ -65,14 +57,12 @@
                                 <th>Full Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
-                                <th>Registered</th>
                                 <th>User Type</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="userTableBody">
-                            <!-- User data will be rendered here by JavaScript -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
                 <div id="userEmptyState" class="empty-state" style="display: none;">
@@ -82,7 +72,6 @@
             </div>
         </div>
 
-        <!-- Categories/Genres Tab -->
         <div id="categories-tab" class="tab-content">
             <div class="card-container">
                 <div class="card-header">
@@ -104,8 +93,7 @@
                     <div class="category-list">
                         <h3>Existing Categories</h3>
                         <ul id="categoriesList">
-                            <!-- Categories will be rendered here by JavaScript -->
-                        </ul>
+                            </ul>
                         <div id="categoryListMessage" class="message"></div>
                     </div>
                 </div>
@@ -113,7 +101,6 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -124,14 +111,13 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-light" onclick="hideModal()">Cancel</button>
-                <a href="#" class="btn btn-danger" id="confirmDeleteBtn">
+                <button class="btn btn-danger" id="confirmDeleteBtn">
                     <i class="fas fa-trash"></i> Confirm Delete
-                </a>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Add User Modal -->
     <div id="addUserModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -159,6 +145,10 @@
                             <option value="admin">Admin</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="addPassword">Password</label>
+                        <input type="password" id="addPassword" required>
+                    </div>
                     <div id="addUserMessage" class="message"></div>
                 </form>
             </div>
@@ -171,7 +161,6 @@
         </div>
     </div>
 
-    <!-- Edit User Modal -->
     <div id="editUserModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -212,7 +201,6 @@
         </div>
     </div>
 
-    <!-- Edit Category Modal -->
     <div id="editCategoryModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -236,436 +224,5 @@
             </div>
         </div>
     </div>
-
-
-    <script>
-        // --- Global Data (Simulated Database) ---
-        let users = [
-            { id: 255, fullName: 'Iman Mysarah', email: 'imanmysarah3108@gmail.com', phone: '0192037351', registered: 'Jul 8, 2025', userType: 'reader' },
-            { id: 254, fullName: 'Atif', email: 'atif@mail.com', phone: '0131312312', registered: 'Jul 8, 2025', userType: 'reader' },
-            { id: 253, fullName: 'admin', email: 'qwerty@gmail.com', phone: '0123456789', registered: 'Jul 8, 2025', userType: 'admin' },
-            { id: 252, fullName: 'Ahmad Daneil Bin Wari', email: 'adwari132@gmail.com', phone: '0134192024', registered: 'Jul 7, 2025', userType: 'clerk' },
-            { id: 251, fullName: 'Aishah Bahar', email: 'ladyaish12@gmail.com', phone: '0195782579', registered: 'Jul 7, 2025', userType: 'reader' },
-            { id: 250, fullName: 'Farhan', email: 'paanwho666@gmail.com', phone: '0186684036', registered: 'Jul 7, 2025', userType: 'reader' },
-            { id: 249, fullName: 'Ahmad Amirulhanif', email: 'hanifahmadamirul@gmail.com', phone: '0126787768', registered: 'Jul 6, 2025', userType: 'reader' }
-        ];
-        let nextUserId = 256; // To simulate new user IDs
-
-        let categories = [
-            { id: 1, name: 'Fiction' },
-            { id: 2, name: 'Science' },
-            { id: 3, name: 'History' },
-            { id: 4, name: 'Fantasy' },
-            { id: 5, name: 'Biography' }
-        ];
-        let nextCategoryId = 6; // To simulate new category IDs
-
-        // --- Tab Functionality ---
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(tabId).classList.add('active');
-            // Find the button that triggered the event and add 'active' class
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
-
-            // Re-render users or categories when their tab is activated
-            if (tabId === 'users-tab') {
-                renderUsers();
-            } else if (tabId === 'categories-tab') {
-                renderCategories();
-            }
-        }
-
-        // --- Delete Confirmation Modal (Generic for Users and Categories) ---
-        let currentItemToDelete = null;
-        let deleteType = ''; // 'user' or 'category'
-        
-        function showDeleteConfirmation(id, name, type) {
-            deleteType = type;
-            currentItemToDelete = id;
-            
-            const modalMessage = document.getElementById('deleteModalMessage');
-            const confirmBtn = document.getElementById('confirmDeleteBtn');
-            
-            if (type === 'user') {
-                modalMessage.innerHTML = `
-                    <p>You are about to delete user:</p>
-                    <p><strong>${name}</strong> (ID: ${id})</p>
-                    <p class="text-danger">This will permanently delete the user account!</p>
-                `;
-                confirmBtn.onclick = () => {
-                    confirmDeleteUser(id, name);
-                    hideModal();
-                };
-            } else if (type === 'category') {
-                modalMessage.innerHTML = `
-                    <p>You are about to delete category:</p>
-                    <p><strong>${name}</strong> (ID: ${id})</p>
-                    <p class="text-danger">This will delete the category and may affect associated books!</p>
-                `;
-                confirmBtn.onclick = () => {
-                    confirmDeleteCategory(id, name);
-                    hideModal();
-                };
-            }
-            
-            document.getElementById('deleteModal').classList.add('active');
-        }
-
-        function hideModal() {
-            document.getElementById('deleteModal').classList.remove('active');
-            currentItemToDelete = null;
-            document.getElementById('confirmDeleteBtn').onclick = null; // Reset onclick
-        }
-        
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideModal();
-                hideAddUserModal();
-                hideEditUserModal();
-                hideEditCategoryModal();
-            }
-        });
-
-        // --- User Management Functions ---
-        function renderUsers() {
-            const userTableBody = document.getElementById('userTableBody');
-            const userCountBadge = document.getElementById('userCountBadge');
-            const userEmptyState = document.getElementById('userEmptyState');
-            userTableBody.innerHTML = ''; // Clear existing list
-
-            const searchTerm = document.getElementById('user-search').value.toLowerCase();
-            const filteredUsers = users.filter(user => 
-                user.fullName.toLowerCase().includes(searchTerm) ||
-                user.email.toLowerCase().includes(searchTerm) ||
-                user.phone.toLowerCase().includes(searchTerm) ||
-                user.userType.toLowerCase().includes(searchTerm)
-            );
-
-            if (filteredUsers.length === 0) {
-                userEmptyState.style.display = 'block';
-                userCountBadge.textContent = '0 users';
-                return;
-            } else {
-                userEmptyState.style.display = 'none';
-            }
-
-            filteredUsers.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.classList.add('user-row');
-                tr.innerHTML = `
-                    <td data-label="ID">${user.id}</td>
-                    <td data-label="Full Name">${user.fullName}</td>
-                    <td data-label="Email">${user.email}</td>
-                    <td data-label="Phone">${user.phone}</td>
-                    <td data-label="Registered">${user.registered}</td>
-                    <td data-label="User Type">
-                        ${user.userType === 'admin' ? 
-                            `<span class="btn btn-light btn-small"><i class="fas fa-crown"></i> Admin</span>` :
-                            `<form action="admin_homepage.php" method="POST" style="display:inline;">
-                                <input type="hidden" name="user_id" value="${user.id}">
-                                <select name="new_user_type" onchange="updateUserType(${user.id}, this.value)">
-                                    <option value="reader" ${user.userType === 'reader' ? 'selected' : ''}>Reader</option>
-                                    <option value="clerk" ${user.userType === 'clerk' ? 'selected' : ''}>Clerk</option>
-                                    <option value="admin" ${user.userType === 'admin' ? 'selected' : ''}>Admin</option>
-                                </select>
-                            </form>`
-                        }
-                    </td>
-                    <td class="actions-cell">
-                        <button class="btn btn-primary btn-small" onclick="showEditUserModal(${user.id})">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        ${user.userType !== 'admin' ? // Prevent deleting current admin
-                            `<button class="btn btn-danger btn-small" onclick="showDeleteConfirmation(${user.id}, '${user.fullName}', 'user')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>` : ''
-                        }
-                    </td>
-                `;
-                userTableBody.appendChild(tr);
-            });
-            userCountBadge.textContent = `${filteredUsers.length} users`;
-        }
-
-        // User search functionality
-        document.getElementById('user-search').addEventListener('input', renderUsers);
-
-        function updateUserType(userId, newUserType) {
-            const userIndex = users.findIndex(u => u.id === userId);
-            if (userIndex !== -1) {
-                users[userIndex].userType = newUserType;
-                renderUsers(); // Re-render to update UI
-                // In a real app, send to backend:
-                // fetch('update_user_type.php', { method: 'POST', body: JSON.stringify({ id: userId, type: newUserType }) });
-            }
-        }
-
-        // Add User Modal
-        function showAddUserModal() {
-            document.getElementById('addUserModal').classList.add('active');
-            document.getElementById('addUserForm').reset(); // Clear form
-            document.getElementById('addUserMessage').textContent = ''; // Clear message
-        }
-
-        function hideAddUserModal() {
-            document.getElementById('addUserModal').classList.remove('active');
-        }
-
-        function addNewUser() {
-            const fullName = document.getElementById('addFullName').value.trim();
-            const email = document.getElementById('addEmail').value.trim();
-            const phone = document.getElementById('addPhone').value.trim();
-            const userType = document.getElementById('addUserType').value;
-            const addUserMessage = document.getElementById('addUserMessage');
-
-            if (!fullName || !email) {
-                addUserMessage.textContent = 'Full Name and Email are required.';
-                addUserMessage.style.color = 'var(--danger)';
-                return;
-            }
-            if (!email.includes('@') || !email.includes('.')) {
-                addUserMessage.textContent = 'Please enter a valid email address.';
-                addUserMessage.style.color = 'var(--danger)';
-                return;
-            }
-
-            // Simulate adding user
-            const newUser = {
-                id: nextUserId++,
-                fullName: fullName,
-                email: email,
-                phone: phone,
-                registered: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                userType: userType
-            };
-            users.push(newUser);
-            renderUsers();
-            addUserMessage.textContent = `User "${fullName}" added successfully!`;
-            addUserMessage.style.color = 'var(--success)';
-            
-            // In a real app, send to backend:
-            // fetch('add_user.php', { method: 'POST', body: JSON.stringify(newUser) });
-            
-            setTimeout(hideAddUserModal, 1500); // Close modal after a delay
-        }
-
-        // Edit User Modal
-        let editingUserId = null;
-
-        function showEditUserModal(userId) {
-            editingUserId = userId;
-            const user = users.find(u => u.id === userId);
-            if (user) {
-                document.getElementById('editUserId').value = user.id;
-                document.getElementById('editFullName').value = user.fullName;
-                document.getElementById('editEmail').value = user.email;
-                document.getElementById('editPhone').value = user.phone;
-                document.getElementById('editUserType').value = user.userType;
-                document.getElementById('editUserMessage').textContent = '';
-                document.getElementById('editUserModal').classList.add('active');
-            }
-        }
-
-        function hideEditUserModal() {
-            document.getElementById('editUserModal').classList.remove('active');
-            editingUserId = null;
-        }
-
-        function saveUserChanges() {
-            const userId = document.getElementById('editUserId').value;
-            const fullName = document.getElementById('editFullName').value.trim();
-            const email = document.getElementById('editEmail').value.trim();
-            const phone = document.getElementById('editPhone').value.trim();
-            const userType = document.getElementById('editUserType').value;
-            const editUserMessage = document.getElementById('editUserMessage');
-
-            if (!fullName || !email) {
-                editUserMessage.textContent = 'Full Name and Email are required.';
-                editUserMessage.style.color = 'var(--danger)';
-                return;
-            }
-            if (!email.includes('@') || !email.includes('.')) {
-                editUserMessage.textContent = 'Please enter a valid email address.';
-                editUserMessage.style.color = 'var(--danger)';
-                return;
-            }
-
-            const userIndex = users.findIndex(u => u.id == userId);
-            if (userIndex !== -1) {
-                users[userIndex].fullName = fullName;
-                users[userIndex].email = email;
-                users[userIndex].phone = phone;
-                users[userIndex].userType = userType;
-                renderUsers();
-                editUserMessage.textContent = `User "${fullName}" updated successfully!`;
-                editUserMessage.style.color = 'var(--success)';
-
-                // In a real app, send to backend:
-                // fetch('update_user.php', { method: 'POST', body: JSON.stringify(users[userIndex]) });
-                
-                setTimeout(hideEditUserModal, 1500);
-            } else {
-                editUserMessage.textContent = 'User not found.';
-                editUserMessage.style.color = 'var(--danger)';
-            }
-        }
-
-        function confirmDeleteUser(userId, userName) {
-            users = users.filter(u => u.id !== userId);
-            renderUsers();
-            // In a real app, send to backend:
-            // fetch(`delete_user.php?id=${userId}`, { method: 'GET' });
-            document.getElementById('userTableBody').insertAdjacentHTML('beforebegin', `<div class="message" style="color: var(--success);">User "${userName}" deleted successfully!</div>`);
-            setTimeout(() => {
-                const msg = document.querySelector('#userTableBody + .message');
-                if (msg) msg.remove();
-            }, 3000);
-        }
-
-        // --- Category Management Functions ---
-        function renderCategories() {
-            const categoriesList = document.getElementById('categoriesList');
-            const categoryListMessage = document.getElementById('categoryListMessage');
-            categoriesList.innerHTML = ''; // Clear existing list
-            categoryListMessage.textContent = ''; // Clear previous messages
-
-            if (categories.length === 0) {
-                categoriesList.innerHTML = '<li class="empty-state-small">No categories added yet.</li>';
-                return;
-            }
-            categories.forEach(category => {
-                const li = document.createElement('li');
-                li.setAttribute('data-id', category.id);
-                li.innerHTML = `
-                    <span>${category.name}</span>
-                    <div class="actions-cell">
-                        <button class="btn btn-primary btn-small" onclick="showEditCategoryModal(${category.id})">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn btn-danger btn-small" onclick="showDeleteConfirmation(${category.id}, '${category.name}', 'category')">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                `;
-                categoriesList.appendChild(li);
-            });
-        }
-
-        function addCategory() {
-            const newCategoryNameInput = document.getElementById('newCategoryName');
-            const newCategoryName = newCategoryNameInput.value.trim();
-            const addCategoryMessage = document.getElementById('addCategoryMessage');
-
-            if (newCategoryName === '') {
-                addCategoryMessage.textContent = 'Category name cannot be empty.';
-                addCategoryMessage.style.color = 'var(--danger)';
-                return;
-            }
-
-            // Check for duplicate
-            if (categories.some(cat => cat.name.toLowerCase() === newCategoryName.toLowerCase())) {
-                addCategoryMessage.textContent = 'Category already exists.';
-                addCategoryMessage.style.color = 'var(--warning)';
-                return;
-            }
-
-            const newCategory = { id: nextCategoryId++, name: newCategoryName };
-            categories.push(newCategory);
-            renderCategories();
-            newCategoryNameInput.value = ''; // Clear input
-            addCategoryMessage.textContent = `Category "${newCategoryName}" added successfully!`;
-            addCategoryMessage.style.color = 'var(--success)';
-
-            // In a real app, you would send this to your backend via fetch/XHR
-            // fetch('add_category.php', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(newCategory)
-            // }).then(response => response.json()).then(data => {
-            //     if (data.success) { /* update UI */ } else { /* show error */ }
-            // });
-        }
-
-        // Edit Category Modal
-        let editingCategoryId = null;
-
-        function showEditCategoryModal(categoryId) {
-            editingCategoryId = categoryId;
-            const category = categories.find(c => c.id === categoryId);
-            if (category) {
-                document.getElementById('editCategoryId').value = category.id;
-                document.getElementById('editCategoryName').value = category.name;
-                document.getElementById('editCategoryMessage').textContent = '';
-                document.getElementById('editCategoryModal').classList.add('active');
-            }
-        }
-
-        function hideEditCategoryModal() {
-            document.getElementById('editCategoryModal').classList.remove('active');
-            editingCategoryId = null;
-        }
-
-        function saveCategoryChanges() {
-            const categoryId = document.getElementById('editCategoryId').value;
-            const newCategoryName = document.getElementById('editCategoryName').value.trim();
-            const editCategoryMessage = document.getElementById('editCategoryMessage');
-
-            if (newCategoryName === '') {
-                editCategoryMessage.textContent = 'Category name cannot be empty.';
-                editCategoryMessage.style.color = 'var(--danger)';
-                return;
-            }
-            // Check for duplicate (excluding the current category being edited)
-            if (categories.some(cat => cat.name.toLowerCase() === newCategoryName.toLowerCase() && cat.id != categoryId)) {
-                editCategoryMessage.textContent = 'Category with this name already exists.';
-                editCategoryMessage.style.color = 'var(--warning)';
-                return;
-            }
-
-            const categoryIndex = categories.findIndex(c => c.id == categoryId);
-            if (categoryIndex !== -1) {
-                const oldName = categories[categoryIndex].name;
-                categories[categoryIndex].name = newCategoryName;
-                renderCategories();
-                editCategoryMessage.textContent = `Category "${oldName}" updated to "${newCategoryName}" successfully!`;
-                editCategoryMessage.style.color = 'var(--success)';
-
-                // In a real app, send to backend:
-                // fetch('update_category.php', { method: 'POST', body: JSON.stringify(categories[categoryIndex]) });
-                
-                setTimeout(hideEditCategoryModal, 1500);
-            } else {
-                editCategoryMessage.textContent = 'Category not found.';
-                editCategoryMessage.style.color = 'var(--danger)';
-            }
-        }
-
-        function confirmDeleteCategory(categoryId, categoryName) {
-            categories = categories.filter(c => c.id !== categoryId);
-            renderCategories();
-            // In a real app, send to backend:
-            // fetch(`delete_category.php?id=${categoryId}`, { method: 'GET' });
-            document.getElementById('categoryListMessage').textContent = `Category "${categoryName}" deleted successfully!`;
-            document.getElementById('categoryListMessage').style.color = 'var(--success)';
-            setTimeout(() => {
-                document.getElementById('categoryListMessage').textContent = '';
-            }, 3000);
-        }
-
-        // --- Initial Render on Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            renderUsers(); // Render users on initial load for the active tab
-            // The categories tab will be rendered when its tab button is clicked
-        });
-    </script>
-</body>
+    <script src="script.js"></script> </body>
 </html>
