@@ -1,0 +1,613 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | FoundIt</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> </head>
+  <body>
+    <div class="admin-container">
+      <header class="admin-header">
+        <h1>
+          <i class="fas fa-shield-alt"></i>
+          Admin Dashboard
+        </h1>
+        <div class="admin-info">
+          <span class="admin-name">
+            <i class="fas fa-user"></i>
+            admin
+          </span>
+          <button class="btn btn-danger" onclick="window.location.href='logout.php'">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="showTab('items-tab')">
+            <i class="fas fa-box"></i>
+            Reported Items
+          </button>
+          <button class="tab-btn" onclick="showTab('users-tab')">
+            <i class="fas fa-users"></i>
+            User Management
+          </button>
+        </div>
+      </div>
+
+      <div id="items-tab" class="tab-content active">
+        <div class="search-export-container">
+          <form action="admin_homepage.php" method="GET" class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" placeholder="Search items..." value="">
+          </form>
+          <div class="export-actions">
+            <form method="POST">
+              <button type="submit" name="export_excel" class="btn btn-success">
+                <i class="fas fa-file-excel"></i>
+                Export Items
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card-container">
+          <div class="card-header">
+            <h2>
+              <i class="fas fa-list"></i>
+              Reported Items
+            </h2>
+            <span class="badge">12 items</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Item Name</th>
+                  <th>Type</th>
+                  <th>Reported By</th>
+                  <th>Status</th>
+                  <th>Date Reported</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>17</td>
+                  <td>Tumbler</td>
+                  <td>Lost</td>
+                  <td>Atif</td>
+                  <td>
+                    <span class="status-badge status-not-found">Not Found</span>
+                  </td>
+                  <td>Jul 8, 2025 06:05 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=17&amp;type=lost" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(17, 'Tumbler', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>16</td>
+                  <td>Realme C10</td>
+                  <td>Lost</td>
+                  <td>Ahmad Daneil Bin Wari</td>
+                  <td>
+                    <span class="status-badge status-found">Found</span>
+                  </td>
+                  <td>Jul 8, 2025 05:59 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=16&amp;type=lost" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(16, 'Realme C10', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>15</td>
+                  <td>Galaxy watch</td>
+                  <td>Lost</td>
+                  <td>Ahmad Amirulhanif</td>
+                  <td>
+                    <span class="status-badge status-found">Found</span>
+                  </td>
+                  <td>Jul 8, 2025 05:49 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=15&amp;type=lost" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(15, 'Galaxy watch', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>12</td>
+                  <td>2019 Blue Mustang</td>
+                  <td>Lost</td>
+                  <td>Farhan</td>
+                  <td>
+                    <span class="status-badge status-not-found">Not Found</span>
+                  </td>
+                  <td>Jul 8, 2025 12:46 AM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=12&amp;type=lost" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(12, '2019 Blue Mustang ', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>10</td>
+                  <td>Gold Bracelet</td>
+                  <td>Lost</td>
+                  <td>Aishah Bahar</td>
+                  <td>
+                    <span class="status-badge status-not-found">Not Found</span>
+                  </td>
+                  <td>Jul 7, 2025 11:38 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=10&amp;type=lost" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(10, 'Gold Bracelet', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>9</td>
+                  <td>samsung s25</td>
+                  <td>Lost</td>
+                  <td>Ahmad Amirulhanif</td>
+                  <td>
+                    <span class="status-badge status-not-found">Not Found</span>
+                  </td>
+                  <td>Jul 7, 2025 06:17 AM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=9&amp;type=lost" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(9, 'samsung s25', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>12</td>
+                  <td>Pink Plushie</td>
+                  <td>Found</td>
+                  <td>Iman Mysarah</td>
+                  <td>
+                    <span class="status-badge status-not-found">Unclaimed</span>
+                  </td>
+                  <td>Jul 8, 2025 06:05 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=12&amp;type=found" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(12, 'Pink Plushie', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>10</td>
+                  <td>Tumbler</td>
+                  <td>Found</td>
+                  <td>Atif</td>
+                  <td>
+                    <span class="status-badge status-not-found">Unclaimed</span>
+                  </td>
+                  <td>Jul 8, 2025 06:02 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=10&amp;type=found" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(10, 'Tumbler', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>9</td>
+                  <td>Student ID</td>
+                  <td>Found</td>
+                  <td>Farhan</td>
+                  <td>
+                    <span class="status-badge status-not-found">Unclaimed</span>
+                  </td>
+                  <td>Jul 8, 2025 12:50 AM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=9&amp;type=found" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(9, 'Student ID', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>8</td>
+                  <td>Ps4</td>
+                  <td>Found</td>
+                  <td>Ahmad Daneil Bin Wari</td>
+                  <td>
+                    <span class="status-badge status-not-found">Unclaimed</span>
+                  </td>
+                  <td>Jul 8, 2025 12:14 AM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=8&amp;type=found" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(8, 'Ps4', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>7</td>
+                  <td>Novel Mr.Grey</td>
+                  <td>Found</td>
+                  <td>Aishah Bahar</td>
+                  <td>
+                    <span class="status-badge status-not-found">Unclaimed</span>
+                  </td>
+                  <td>Jul 7, 2025 11:54 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=7&amp;type=found" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(7, 'Novel Mr.Grey', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>Capybara Plushie</td>
+                  <td>Found</td>
+                  <td>Aishah Bahar</td>
+                  <td>
+                    <span class="status-badge status-not-found">Unclaimed</span>
+                  </td>
+                  <td>Jul 7, 2025 11:46 PM</td>
+                  <td class="actions-cell">
+                    <a href="view_item.php?id=6&amp;type=found" class="btn btn-primary">
+                      <i class="fas fa-eye"></i>
+                      View
+                    </a>
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(6, 'Capybara Plushie', 'item')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="users-tab" class="tab-content">
+        <div class="search-export-container">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="user-search" placeholder="Search users...">
+          </div>
+          <div class="export-actions">
+            <form method="POST">
+              <button type="submit" name="export_users_excel" class="btn btn-success">
+                <i class="fas fa-file-excel"></i>
+                Export Users
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card-container">
+          <div class="card-header">
+            <h2>
+              <i class="fas fa-users"></i>
+              Registered Users
+            </h2>
+            <span class="badge">7 users</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Registered</th>
+                  <th>User Type</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="user-row">
+                  <td>255</td>
+                  <td>Iman Mysarah</td>
+                  <td>imanmysarah3108@gmail.com</td>
+                  <td>0192037351</td>
+                  <td>Jul 8, 2025</td>
+                  <td>
+                    <form action="admin_homepage.php" method="POST" style="display:inline;">
+                      <input type="hidden" name="user_id" value="255">
+                      <select name="new_user_type" onchange="this.form.submit()">
+                        <option value="user" selected="">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="user-actions">
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(255, 'Iman Mysarah', 'user')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr class="user-row">
+                  <td>254</td>
+                  <td>Atif</td>
+                  <td>atif@mail.com</td>
+                  <td>0131312312</td>
+                  <td>Jul 8, 2025</td>
+                  <td>
+                    <form action="admin_homepage.php" method="POST" style="display:inline;">
+                      <input type="hidden" name="user_id" value="254">
+                      <select name="new_user_type" onchange="this.form.submit()">
+                        <option value="user" selected="">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="user-actions">
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(254, 'Atif', 'user')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr class="user-row">
+                  <td>253</td>
+                  <td>admin</td>
+                  <td>qwerty@gmail.com</td>
+                  <td>0123456789</td>
+                  <td>Jul 8, 2025</td>
+                  <td>
+                    <form action="admin_homepage.php" method="POST" style="display:inline;">
+                      <input type="hidden" name="user_id" value="253">
+                      <select name="new_user_type" onchange="this.form.submit()">
+                        <option value="user">User</option>
+                        <option value="admin" selected="">Admin</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="user-actions">
+                    <span class="btn btn-light">
+                      <i class="fas fa-crown"></i>
+                      Current Admin
+                    </span>
+                  </td>
+                </tr>
+                <tr class="user-row">
+                  <td>252</td>
+                  <td>Ahmad Daneil Bin Wari</td>
+                  <td>adwari132@gmail.com</td>
+                  <td>0134192024</td>
+                  <td>Jul 7, 2025</td>
+                  <td>
+                    <form action="admin_homepage.php" method="POST" style="display:inline;">
+                      <input type="hidden" name="user_id" value="252">
+                      <select name="new_user_type" onchange="this.form.submit()">
+                        <option value="user" selected="">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="user-actions">
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(252, 'Ahmad Daneil Bin Wari', 'user')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr class="user-row">
+                  <td>251</td>
+                  <td>Aishah Bahar</td>
+                  <td>ladyaish12@gmail.com</td>
+                  <td>0195782579</td>
+                  <td>Jul 7, 2025</td>
+                  <td>
+                    <form action="admin_homepage.php" method="POST" style="display:inline;">
+                      <input type="hidden" name="user_id" value="251">
+                      <select name="new_user_type" onchange="this.form.submit()">
+                        <option value="user" selected="">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="user-actions">
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(251, 'Aishah Bahar', 'user')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr class="user-row">
+                  <td>250</td>
+                  <td>Farhan</td>
+                  <td>paanwho666@gmail.com</td>
+                  <td>0186684036</td>
+                  <td>Jul 7, 2025</td>
+                  <td>
+                    <form action="admin_homepage.php" method="POST" style="display:inline;">
+                      <input type="hidden" name="user_id" value="250">
+                      <select name="new_user_type" onchange="this.form.submit()">
+                        <option value="user" selected="">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="user-actions">
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(250, 'Farhan', 'user')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                <tr class="user-row">
+                  <td>249</td>
+                  <td>Ahmad Amirulhanif</td>
+                  <td>hanifahmadamirul@gmail.com</td>
+                  <td>0126787768</td>
+                  <td>Jul 6, 2025</td>
+                  <td>
+                    <form action="admin_homepage.php" method="POST" style="display:inline;">
+                      <input type="hidden" name="user_id" value="249">
+                      <select name="new_user_type" onchange="this.form.submit()">
+                        <option value="user" selected="">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td class="user-actions">
+                    <button class="btn btn-danger" onclick="showDeleteConfirmation(249, 'Ahmad Amirulhanif', 'user')">
+                      <i class="fas fa-trash"></i>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="deleteModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>
+            <i class="fas fa-exclamation-triangle"></i>
+            Confirm Deletion
+          </h3>
+        </div>
+        <div class="modal-body" id="deleteModalMessage">
+          Are you sure you want to delete this item?
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light" onclick="hideModal()">Cancel</button>
+          <a href="#" class="btn btn-danger" id="confirmDeleteBtn">
+            <i class="fas fa-trash"></i>
+            Confirm Delete
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Tab functionality
+      function showTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+      }
+
+      // Delete confirmation modal
+      let currentItemToDelete = null;
+      let deleteType = 'item';
+
+      function showDeleteConfirmation(id, name, type) {
+        deleteType = type;
+        currentItemToDelete = id;
+
+        const modalMessage = document.getElementById('deleteModalMessage');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+        if (type === 'item') {
+          modalMessage.innerHTML = `
+            <p>You are about to delete:</p>
+            <p><strong>${name}</strong> (ID: ${id})</p>
+            <p class="text-danger">This action cannot be undone!</p>
+          `;
+          confirmBtn.href = `admin_delete_item.php?id=${id}`;
+        } else {
+          modalMessage.innerHTML = `
+            <p>You are about to delete user:</p>
+            <p><strong>${name}</strong> (ID: ${id})</p>
+            <p class="text-danger">This will permanently delete the user account and all their items!</p>
+          `;
+          confirmBtn.href = `admin_delete_user.php?id=${id}`;
+        }
+
+        document.getElementById('deleteModal').classList.add('active');
+      }
+
+      function hideModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        currentItemToDelete = null;
+      }
+
+      // User search functionality
+      document.getElementById('user-search').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        document.querySelectorAll('.user-row').forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+      });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          hideModal();
+        }
+      });
+    </script>
+  </body>
+</html>
