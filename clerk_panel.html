@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clerk Panel | BookNest</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1><i class="fas fa-clipboard-list"></i> BookNest Clerk Panel</h1> 
+            <div class="admin-info">
+                <span class="admin-name"><i class="fas fa-user-tag"></i> Clerk</span>
+                <button class="btn btn-danger" onclick="window.location.href='admin_login.html'"> 
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showClerkTab('reports-tab')">
+                    <i class="fas fa-chart-bar"></i> View Reports
+                </button>
+                <button class="tab-btn" onclick="showClerkTab('moderation-tab')">
+                    <i class="fas fa-comments"></i> Moderate Reviews
+                </button>
+            </div>
+        </div>
+
+        <div id="reports-tab" class="tab-content active">
+            <div class="card-container">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> System Reports Overview</h2>
+                </div>
+                <div class="report-grid">
+                    <div class="report-card">
+                        <h3>Total Books</h3>
+                        <p id="totalBooksCount"><i class="fas fa-book-open"></i> Loading...</p>
+                    </div>
+                    <div class="report-card">
+                        <h3>Total Users</h3>
+                        <p id="totalUsersCount"><i class="fas fa-users"></i> Loading...</p>
+                    </div>
+                    <div class="report-card">
+                        <h3>Total Reviews</h3>
+                        <p id="totalReviewsCount"><i class="fas fa-comments"></i> Loading...</p>
+                    </div>
+                    <div class="report-card">
+                        <h3>Approved Reviews</h3>
+                        <p id="approvedReviewsCount"><i class="fas fa-check-circle"></i> Loading...</p>
+                    </div>
+                    <div class="report-card">
+                        <h3>Pending Reviews</h3>
+                        <p id="pendingReviewsCount"><i class="fas fa-hourglass-half"></i> Loading...</p>
+                    </div>
+                </div>
+                <div id="reportsMessage" class="message"></div>
+            </div>
+        </div>
+
+        <div id="moderation-tab" class="tab-content">
+            <div class="card-container">
+                <div class="card-header">
+                    <h2><i class="fas fa-clipboard-list"></i> Pending Reviews for Moderation</h2>
+                    <span class="badge" id="pendingReviewsCountBadge"></span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Review ID</th>
+                                <th>Ebook Title</th>
+                                <th>Author</th>
+                                <th>User</th>
+                                <th>Rating</th>
+                                <th>Review Text</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviewsTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="reviewsEmptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-check-double"></i>
+                    <p>No pending reviews to moderate. All clear!</p>
+                </div>
+                <div id="moderationMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="actionConfirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle"><i class="fas fa-question-circle"></i> Confirm Action</h3>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                Are you sure you want to perform this action?
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" onclick="hideClerkModal()">Cancel</button>
+                <button class="btn btn-primary" id="confirmClerkActionBtn">
+                    <i class="fas fa-check"></i> Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="clerk_script.js"></script> </body>
+</html>

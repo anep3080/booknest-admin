@@ -506,11 +506,10 @@ function displayMessage(message, type, targetElementId) {
     }, 3000);
 }
 
-// Export Users function (placeholder for backend functionality)
+// Export Users function (now fully functional)
 function exportUsers() {
-    alert("Export functionality would be implemented on the server-side to generate an Excel file.");
-    // In a real application, you would make a fetch request to a PHP endpoint:
-    // window.location.href = 'api.php?action=exportUsersExcel';
+    window.location.href = 'api.php?action=exportUsersExcel';
+    displayMessage('Exporting users... Your download should start shortly.', 'info', 'userTableBody');
 }
 
 

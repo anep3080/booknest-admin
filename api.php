@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); // Be cautious with '*' in production, restrict to your frontend domain
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH'); // Added PATCH
 header('Access-Control-Allow-Headers: Content-Type, Authorization, apikey');
 
 $supabaseUrl = 'https://fymykhhwvegsuqpekryy.supabase.co';
@@ -10,16 +10,24 @@ $supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 function callSupabase($method, $endpoint, $data = null, $filters = [], $select = '*') {
     global $supabaseUrl, $supabaseAnonKey;
     $url = $supabaseUrl . '/rest/v1/' . $endpoint;
+    $queryParams = [];
 
-    // Build query parameters for GET requests
-    if ($method === 'GET' && !empty($filters)) {
-        $queryParams = [];
+    // Always add 'select' if specified (though primarily for GET)
+    if ($select !== '*') {
+        $queryParams[] = 'select=' . $select;
+    }
+
+    // Build query parameters for filters (for GET, PUT, DELETE, PATCH)
+    // Supabase PostgREST requires filters for PUT/DELETE/PATCH to be in the URL for identification
+    if (!empty($filters)) {
         foreach ($filters as $key => $value) {
             $queryParams[] = "$key=$value";
         }
-        $url .= '?' . implode('&', $queryParams) . '&select=' . $select;
-    } elseif ($method === 'GET' && $select !== '*') {
-         $url .= '?select=' . $select;
+    }
+
+    // Append all collected query parameters to the URL
+    if (!empty($queryParams)) {
+        $url .= '?' . implode('&', $queryParams);
     }
 
     $ch = curl_init();
@@ -38,11 +46,15 @@ function callSupabase($method, $endpoint, $data = null, $filters = [], $select =
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             break;
         case 'PUT':
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            break;
+        case 'PATCH': // Added PATCH method
         case 'DELETE':
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+            // --- NEW DEBUG LOGGING FOR PAYLOAD ---
+            error_log("Debug: Data for $method request to $endpoint: " . print_r($data, true));
+            // --- END NEW DEBUG LOGGING ---
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+            if ($data !== null) { // Only set POSTFIELDS if data is actually provided for PUT/PATCH
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            }
             break;
     }
 
@@ -69,21 +81,26 @@ switch ($action) {
             exit;
         }
 
-        // Supabase does not have a direct "login with email/password" endpoint via postgrest.
-        // You would typically use the Auth API (which requires the JS SDK or a separate backend auth server).
         // For this simplified example, we'll simulate by checking against the 'users' table directly,
         // which is NOT secure for production as passwords should be hashed and compared.
         // A proper solution involves Supabase's GoTrue (Auth) service.
         $response = callSupabase('GET', 'users', null, [
             'email' => 'eq.' . $email,
-            'password' => 'eq.' . $password, // WARNING: Insecure, passwords should be hashed
-            'roles' => 'eq.admin' // Only allow admin role to login
-        ]);
+            'password' => 'eq.' . $password // WARNING: Insecure, passwords should be hashed
+        ], 'user_id,name,email,roles'); // Select roles to return it
 
         if ($response['status'] === 200 && !empty($response['data'])) {
-            echo json_encode(['success' => true, 'message' => 'Login successful!']);
+            $user = $response['data'][0]; // Get the first user found
+            $role = $user['roles'];
+
+            // Only allow 'admin' and 'clerk' to proceed to their respective panels
+            if ($role === 'admin' || $role === 'clerk') {
+                echo json_encode(['success' => true, 'message' => 'Login successful!', 'role' => $role]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Your role does not have access to an administrative panel.']);
+            }
         } else {
-            echo json_encode(['success' => false, 'message' => 'Invalid credentials or not an admin.']);
+            echo json_encode(['success' => false, 'message' => 'Invalid credentials.']);
         }
         break;
 
@@ -111,8 +128,8 @@ switch ($action) {
         $userType = $input['userType'] ?? 'reader';
         $password = $input['password'] ?? 'default_password'; // A default password for new users, should be more robust in production
 
-        if (empty($fullName) || empty($email)) {
-            echo json_encode(['success' => false, 'message' => 'Full Name and Email are required.']);
+        if (empty($fullName) || empty($email) || empty($password)) {
+            echo json_encode(['success' => false, 'message' => 'Full Name, Email, and Password are required.']);
             exit;
         }
 
@@ -128,7 +145,7 @@ switch ($action) {
         if ($response['status'] === 201) { // 201 Created
             echo json_encode(['success' => true, 'message' => 'User added successfully!']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to add user.']);
+            echo json_encode(['success' => false, 'message' => 'Failed to add user. Email might already exist or other database error.']);
         }
         break;
 
@@ -151,12 +168,13 @@ switch ($action) {
             'phone_number' => $phone,
             'roles' => $userType
         ];
-        $response = callSupabase('PUT', 'users', $data, ['user_id' => 'eq.' . $userId]);
+        // Changed PUT to PATCH for user updates as well, for consistency and partial update semantics
+        $response = callSupabase('PATCH', 'users', $data, ['user_id' => 'eq.' . $userId]);
 
-        if ($response['status'] === 204) { // 204 No Content for successful PUT
+        if ($response['status'] === 204) { // 204 No Content for successful PATCH
             echo json_encode(['success' => true, 'message' => 'User updated successfully!']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to update user.']);
+            echo json_encode(['success' => false, 'message' => 'Failed to update user. Email might already exist or other database error.']);
         }
         break;
 
@@ -172,6 +190,47 @@ switch ($action) {
             echo json_encode(['success' => true, 'message' => 'User deleted successfully!']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Failed to delete user.']);
+        }
+        break;
+
+    case 'exportUsersExcel':
+        // Fetch all users
+        $response = callSupabase('GET', 'users', null, [], '*'); // Get all columns
+
+        if ($response['status'] === 200 && !empty($response['data'])) {
+            $usersData = $response['data'];
+
+            // Set headers for CSV download
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="users_export_' . date('Ymd_His') . '.csv"');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+
+            $output = fopen('php://output', 'w');
+
+            // Output CSV header
+            $header = ['User ID', 'Name', 'Email', 'Phone Number', 'Roles', 'Password', 'Created At'];
+            fputcsv($output, $header);
+
+            // Output user data
+            foreach ($usersData as $user) {
+                // Ensure all keys exist and handle potential nulls
+                $row = [
+                    $user['user_id'] ?? '',
+                    $user['name'] ?? '',
+                    $user['email'] ?? '',
+                    $user['phone_number'] ?? '',
+                    $user['roles'] ?? '',
+                    $user['password'] ?? '', // WARNING: Exporting plain passwords is a security risk
+                    $user['created_at'] ?? '' // Assuming a created_at column for completeness
+                ];
+                fputcsv($output, $row);
+            }
+
+            fclose($output);
+            exit; // Terminate script after file download
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No users found or failed to fetch data for export.']);
         }
         break;
 
@@ -212,7 +271,8 @@ switch ($action) {
             exit;
         }
 
-        $response = callSupabase('PUT', 'genres', ['genre_name' => $categoryName], ['genre_id' => 'eq.' . $categoryId]);
+        // Changed PUT to PATCH for category updates as well
+        $response = callSupabase('PATCH', 'genres', ['genre_name' => $categoryName], ['genre_id' => 'eq.' . $categoryId]);
 
         if ($response['status'] === 204) {
             echo json_encode(['success' => true, 'message' => 'Category updated successfully!']);
@@ -234,6 +294,84 @@ switch ($action) {
         } else {
             echo json_encode(['success' => false, 'message' => 'Failed to delete category.']);
         }
+        break;
+
+    // --- Clerk Specific Actions ---
+
+    case 'getPendingReviews':
+        $response = callSupabase('GET', 'reviews', null, ['status' => 'eq.pending']);
+        if ($response['status'] === 200) {
+            // Join with ebooks and users tables to get more context
+            $reviewsWithDetails = [];
+            foreach ($response['data'] as $review) {
+                $ebookResponse = callSupabase('GET', 'ebooks', null, ['ebook_id' => 'eq.' . $review['ebook_id']], 'title,author');
+                $userResponse = callSupabase('GET', 'users', null, ['user_id' => 'eq.' . $review['user_id']], 'name,email');
+                
+                $review['ebook_title'] = $ebookResponse['data'][0]['title'] ?? 'Unknown Ebook';
+                $review['ebook_author'] = $ebookResponse['data'][0]['author'] ?? 'Unknown Author';
+                $review['user_name'] = $userResponse['data'][0]['name'] ?? 'Unknown User';
+                $review['user_email'] = $userResponse['data'][0]['email'] ?? 'N/A';
+                $reviewsWithDetails[] = $review;
+            }
+            echo json_encode(['success' => true, 'data' => $reviewsWithDetails]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to fetch pending reviews.']);
+        }
+        break;
+
+    case 'updateReviewStatus':
+        // --- START DEBUG LOGGING ---
+        error_log("Debug: api.php received RAW input: " . file_get_contents('php://input'));
+        $input = json_decode(file_get_contents('php://input'), true);
+        error_log("Debug: api.php received JSON decoded input: " . print_r($input, true));
+        $reviewId = $input['reviewId'] ?? '';
+        $newStatus = $input['newStatus'] ?? ''; // 'approved' or 'rejected'
+        error_log("Debug: Extracted reviewId: '" . $reviewId . "', newStatus: '" . $newStatus . "'");
+        // --- END DEBUG LOGGING ---
+
+        if (empty($reviewId) || !in_array($newStatus, ['approved', 'rejected'])) {
+            echo json_encode(['success' => false, 'message' => 'Review ID and a valid new status (approved/rejected) are required.']);
+            exit;
+        }
+
+        $data = ['status' => $newStatus];
+        // Changed method from 'PUT' to 'PATCH'
+        $response = callSupabase('PATCH', 'reviews', $data, ['review_id' => 'eq.' . $reviewId]);
+
+        // --- DEBUG LOGGING FOR SUPABASE RESPONSE ---
+        error_log("Debug: Supabase API response for updateReviewStatus: " . print_r($response, true));
+        // --- END DEBUG LOGGING ---
+
+        if ($response['status'] === 204) { // 204 No Content for successful PATCH (usually)
+            echo json_encode(['success' => true, 'message' => 'Review status updated successfully!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to update review status.']);
+        }
+        break;
+
+    case 'getReports':
+        // This is a placeholder for actual report generation.
+        // For example, fetch count of books, users, reviews, popular genres etc.
+        // Let's fetch some simple aggregated data for demonstration.
+
+        $booksResponse = callSupabase('GET', 'ebooks', null, [], 'count');
+        $usersResponse = callSupabase('GET', 'users', null, [], 'count');
+        $reviewsResponse = callSupabase('GET', 'reviews', null, [], 'count');
+        $approvedReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.approved'], 'count');
+        $pendingReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.pending'], 'count');
+
+        $reports = [
+            'total_books' => $booksResponse['data'][0]['count'] ?? 0,
+            'total_users' => $usersResponse['data'][0]['count'] ?? 0,
+            'total_reviews' => $reviewsResponse['data'][0]['count'] ?? 0,
+            'approved_reviews' => $approvedReviewsResponse['data'][0]['count'] ?? 0,
+            'pending_reviews' => $pendingReviewsResponse['data'][0]['count'] ?? 0,
+            // Add more complex reports here as needed, e.g.,
+            // - Top 5 Authors: SELECT author, count(*) FROM ebooks GROUP BY author ORDER BY count(*) DESC LIMIT 5
+            // - Average Rating per Ebook: SELECT ebook_id, AVG(rating) FROM reviews GROUP BY ebook_id
+        ];
+
+        echo json_encode(['success' => true, 'data' => $reports]);
         break;
 
     default:
