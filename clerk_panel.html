@@ -6,14 +6,15 @@
     <title>Clerk Panel | BookNest</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css"> </head>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
     <div class="admin-container">
         <header class="admin-header">
-            <h1><i class="fas fa-clipboard-list"></i> BookNest Clerk Panel</h1> 
+            <h1><i class="fas fa-clipboard-list"></i> BookNest Clerk Panel</h1>
             <div class="admin-info">
                 <span class="admin-name"><i class="fas fa-user-tag"></i> Clerk</span>
-                <button class="btn btn-danger" onclick="window.location.href='admin_login.html'"> 
+                <button class="btn btn-danger" onclick="window.location.href='admin_login.html'">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
@@ -21,8 +22,11 @@
 
         <div class="tab-container">
             <div class="tab-buttons">
-                <button class="tab-btn active" onclick="showClerkTab('reports-tab')">
-                    <i class="fas fa-chart-bar"></i> View Reports
+                <button class="tab-btn active" onclick="showClerkTab('books-tab')">
+                    <i class="fas fa-book-open"></i> Manage Books
+                </button>
+                <button class="tab-btn" onclick="showClerkTab('categories-tab')">
+                    <i class="fas fa-tags"></i> Manage Categories/Genres
                 </button>
                 <button class="tab-btn" onclick="showClerkTab('moderation-tab')">
                     <i class="fas fa-comments"></i> Moderate Reviews
@@ -30,34 +34,81 @@
             </div>
         </div>
 
-        <div id="reports-tab" class="tab-content active">
+        <div id="books-tab" class="tab-content active">
+            <div class="search-export-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="book-search" placeholder="Search books by title, author or ISBN...">
+                </div>
+                <div class="export-actions">
+                    <button class="btn btn-primary" onclick="showAddBookModal()">
+                        <i class="fas fa-plus"></i> Add Book
+                    </button>
+                </div>
+            </div>
+
             <div class="card-container">
                 <div class="card-header">
-                    <h2><i class="fas fa-chart-pie"></i> System Reports Overview</h2>
+                    <h2><i class="fas fa-book"></i> All Books</h2>
+                    <span class="badge" id="bookCountBadge"></span>
                 </div>
-                <div class="report-grid">
-                    <div class="report-card">
-                        <h3>Total Books</h3>
-                        <p id="totalBooksCount"><i class="fas fa-book-open"></i> Loading...</p>
+                <div class="form-group">
+                    <label for="genreFilter">Filter by Genre:</label>
+                    <select id="genreFilter" onchange="fetchBooks()">
+                        <option value="">All Genres</option>
+                        <!-- Options will be dynamically loaded by JavaScript -->
+                    </select>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>ISBN</th>
+                                <th>Genre</th>
+                                <th>Pub. Date</th>
+                                <th>Availability</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="booksEmptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-book-open"></i>
+                    <p>No books found matching your search or filters.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="categories-tab" class="tab-content">
+            <div class="card-container">
+                <div class="card-header">
+                    <h2><i class="fas fa-tags"></i> Manage Categories/Genres</h2>
+                </div>
+                <div class="category-management">
+                    <div class="add-category-form">
+                        <h3>Add New Category</h3>
+                        <div class="form-group">
+                            <label for="newCategoryName">Category Name</label>
+                            <input type="text" id="newCategoryName" placeholder="e.g., Fiction, Science, History">
+                        </div>
+                        <button class="btn btn-primary" onclick="addCategory()">
+                            <i class="fas fa-plus-circle"></i> Add Category
+                        </button>
+                        <div id="addCategoryMessage" class="message"></div>
                     </div>
-                    <div class="report-card">
-                        <h3>Total Users</h3>
-                        <p id="totalUsersCount"><i class="fas fa-users"></i> Loading...</p>
-                    </div>
-                    <div class="report-card">
-                        <h3>Total Reviews</h3>
-                        <p id="totalReviewsCount"><i class="fas fa-comments"></i> Loading...</p>
-                    </div>
-                    <div class="report-card">
-                        <h3>Approved Reviews</h3>
-                        <p id="approvedReviewsCount"><i class="fas fa-check-circle"></i> Loading...</p>
-                    </div>
-                    <div class="report-card">
-                        <h3>Pending Reviews</h3>
-                        <p id="pendingReviewsCount"><i class="fas fa-hourglass-half"></i> Loading...</p>
+
+                    <div class="category-list">
+                        <h3>Existing Categories</h3>
+                        <ul id="categoriesList">
+                            </ul>
+                        <div id="categoryListMessage" class="message"></div>
                     </div>
                 </div>
-                <div id="reportsMessage" class="message"></div>
             </div>
         </div>
 
@@ -112,5 +163,160 @@
         </div>
     </div>
 
-    <script src="clerk_script.js"></script> </body>
+    <div id="addBookModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Add New Book</h3>
+            </div>
+            <div class="modal-body">
+                <form id="addBookForm">
+                    <div class="form-group">
+                        <label for="addBookTitle">Title</label>
+                        <input type="text" id="addBookTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookAuthor">Author</label>
+                        <input type="text" id="addBookAuthor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookISBN">ISBN</label>
+                        <input type="text" id="addBookISBN" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookPublicationDate">Publication Date</label>
+                        <input type="date" id="addBookPublicationDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookGenre">Genre</label>
+                        <select id="addBookGenre" required>
+                            <!-- Genres will be dynamically loaded -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookAvailability">Availability</label>
+                        <select id="addBookAvailability" required>
+                            <option value="available">Available</option>
+                            <option value="unavailable">Unavailable</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookDescription">Description</label>
+                        <textarea id="addBookDescription" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="addBookCoverUrl">Cover Image URL</label>
+                        <input type="url" id="addBookCoverUrl" placeholder="Optional">
+                    </div>
+                    <div id="addBookMessage" class="message"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" onclick="hideAddBookModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addNewBook()">
+                    <i class="fas fa-save"></i> Add Book
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editBookModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Book Details</h3>
+            </div>
+            <div class="modal-body">
+                <form id="editBookForm">
+                    <input type="hidden" id="editBookId">
+                    <div class="form-group">
+                        <label for="editBookTitle">Title</label>
+                        <input type="text" id="editBookTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookAuthor">Author</label>
+                        <input type="text" id="editBookAuthor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookISBN">ISBN</label>
+                        <input type="text" id="editBookISBN" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookPublicationDate">Publication Date</label>
+                        <input type="date" id="editBookPublicationDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookGenre">Genre</label>
+                        <select id="editBookGenre" required>
+                            <!-- Genres will be dynamically loaded -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookAvailability">Availability</label>
+                        <select id="editBookAvailability" required>
+                            <option value="available">Available</option>
+                            <option value="unavailable">Unavailable</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookDescription">Description</label>
+                        <textarea id="editBookDescription" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookCoverUrl">Cover Image URL</label>
+                        <input type="url" id="editBookCoverUrl" placeholder="Optional">
+                    </div>
+                    <div id="editBookMessage" class="message"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" onclick="hideEditBookModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBookChanges()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editCategoryModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Category Name</h3>
+            </div>
+            <div class="modal-body">
+                <form id="editCategoryForm">
+                    <input type="hidden" id="editCategoryId">
+                    <div class="form-group">
+                        <label for="editCategoryName">Category Name</label>
+                        <input type="text" id="editCategoryName" required>
+                    </div>
+                    <div id="editCategoryMessage" class="message"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" onclick="hideEditCategoryModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCategoryChanges()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3>
+            </div>
+            <div class="modal-body" id="deleteModalMessage">
+                Are you sure you want to delete this item?
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" onclick="hideClerkModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Confirm Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="clerk_script.js"></script>
+</body>
 </html>

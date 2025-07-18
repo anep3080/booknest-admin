@@ -350,15 +350,30 @@ switch ($action) {
         break;
 
     case 'getReports':
-        // This is a placeholder for actual report generation.
-        // For example, fetch count of books, users, reviews, popular genres etc.
-        // Let's fetch some simple aggregated data for demonstration.
-
+        // Fetch aggregated data
         $booksResponse = callSupabase('GET', 'ebooks', null, [], 'count');
         $usersResponse = callSupabase('GET', 'users', null, [], 'count');
         $reviewsResponse = callSupabase('GET', 'reviews', null, [], 'count');
         $approvedReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.approved'], 'count');
         $pendingReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.pending'], 'count');
+        $rejectedReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.rejected'], 'count'); // Added rejected reviews count
+
+        // Fetch all books for comprehensive report
+        $allBooksResponse = callSupabase('GET', 'ebooks', null, [], '*,genres(genre_name)'); // Join with genres table
+
+        // Fetch all reviews for comprehensive report
+        $allReviewsResponse = callSupabase('GET', 'reviews', null, [], '*');
+        $allReviewsWithDetails = [];
+        foreach ($allReviewsResponse['data'] as $review) {
+            $ebookResponse = callSupabase('GET', 'ebooks', null, ['ebook_id' => 'eq.' . $review['ebook_id']], 'title,author');
+            $userResponse = callSupabase('GET', 'users', null, ['user_id' => 'eq.' . $review['user_id']], 'name,email');
+            
+            $review['ebook_title'] = $ebookResponse['data'][0]['title'] ?? 'Unknown Ebook';
+            $review['ebook_author'] = $ebookResponse['data'][0]['author'] ?? 'Unknown Author';
+            $review['user_name'] = $userResponse['data'][0]['name'] ?? 'Unknown User';
+            $review['user_email'] = $userResponse['data'][0]['email'] ?? 'N/A';
+            $allReviewsWithDetails[] = $review;
+        }
 
         $reports = [
             'total_books' => $booksResponse['data'][0]['count'] ?? 0,
@@ -366,13 +381,219 @@ switch ($action) {
             'total_reviews' => $reviewsResponse['data'][0]['count'] ?? 0,
             'approved_reviews' => $approvedReviewsResponse['data'][0]['count'] ?? 0,
             'pending_reviews' => $pendingReviewsResponse['data'][0]['count'] ?? 0,
-            // Add more complex reports here as needed, e.g.,
-            // - Top 5 Authors: SELECT author, count(*) FROM ebooks GROUP BY author ORDER BY count(*) DESC LIMIT 5
-            // - Average Rating per Ebook: SELECT ebook_id, AVG(rating) FROM reviews GROUP BY ebook_id
+            'rejected_reviews' => $rejectedReviewsResponse['data'][0]['count'] ?? 0, // Added to reports
+            'all_books' => $allBooksResponse['data'] ?? [],
+            'all_reviews' => $allReviewsWithDetails ?? [], // Added all reviews to reports
         ];
 
         echo json_encode(['success' => true, 'data' => $reports]);
         break;
+
+    // --- Book Management Actions (New) ---
+    case 'getEbooks':
+        $searchTerm = $_GET['search'] ?? '';
+        $genreFilter = $_GET['genre'] ?? '';
+        $filters = [];
+        
+        if (!empty($searchTerm)) {
+            $filters['or'] = '(title.ilike.%' . $searchTerm . '%,author.ilike.%' . $searchTerm . '%,isbn.ilike.%' . $searchTerm . '%)';
+        }
+        if (!empty($genreFilter)) {
+            // Assuming 'genre_id' is the foreign key in 'ebooks' referencing 'genres'
+            // This requires a join or a subquery in Supabase, but for simplicity, we'll filter by genre_id if available.
+            // A more robust solution might involve fetching genre_id from genre_name first.
+            $genreResponse = callSupabase('GET', 'genres', null, ['genre_name' => 'eq.' . $genreFilter], 'genre_id');
+            if ($genreResponse['status'] === 200 && !empty($genreResponse['data'])) {
+                $genreId = $genreResponse['data'][0]['genre_id'];
+                $filters['genre_id'] = 'eq.' . $genreId;
+            } else if (!empty($genreFilter)) {
+                // If genre filter is applied but no matching genre found, return empty
+                echo json_encode(['success' => true, 'data' => []]);
+                exit;
+            }
+        }
+
+        // Fetch ebooks and join with genres to get genre name
+        $response = callSupabase('GET', 'ebooks', null, $filters, '*,genres(genre_name)');
+        
+        if ($response['status'] === 200) {
+            echo json_encode(['success' => true, 'data' => $response['data']]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to fetch ebooks.']);
+        }
+        break;
+
+    case 'addEbook':
+        $input = json_decode(file_get_contents('php://input'), true);
+        $title = $input['title'] ?? '';
+        $author = $input['author'] ?? '';
+        $isbn = $input['isbn'] ?? '';
+        $publicationDate = $input['publicationDate'] ?? '';
+        $genreId = $input['genreId'] ?? '';
+        $availability = $input['availability'] ?? 'available';
+        $description = $input['description'] ?? null;
+        $coverUrl = $input['coverUrl'] ?? null;
+
+        if (empty($title) || empty($author) || empty($isbn) || empty($publicationDate) || empty($genreId)) {
+            echo json_encode(['success' => false, 'message' => 'Title, Author, ISBN, Publication Date, and Genre are required.']);
+            exit;
+        }
+
+        $data = [
+            'title' => $title,
+            'author' => $author,
+            'isbn' => $isbn,
+            'publication_date' => $publicationDate,
+            'genre_id' => $genreId,
+            'availability_status' => $availability,
+            'description' => $description,
+            'cover_image_url' => $coverUrl
+        ];
+        $response = callSupabase('POST', 'ebooks', $data);
+
+        if ($response['status'] === 201) {
+            echo json_encode(['success' => true, 'message' => 'Book added successfully!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to add book: ' . ($response['data']['message'] ?? 'Unknown error')]);
+        }
+        break;
+
+    case 'updateEbook':
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ebookId = $input['id'] ?? '';
+        $title = $input['title'] ?? '';
+        $author = $input['author'] ?? '';
+        $isbn = $input['isbn'] ?? '';
+        $publicationDate = $input['publicationDate'] ?? '';
+        $genreId = $input['genreId'] ?? '';
+        $availability = $input['availability'] ?? 'available';
+        $description = $input['description'] ?? null;
+        $coverUrl = $input['coverUrl'] ?? null;
+
+        if (empty($ebookId) || empty($title) || empty($author) || empty($isbn) || empty($publicationDate) || empty($genreId)) {
+            echo json_encode(['success' => false, 'message' => 'Book ID, Title, Author, ISBN, Publication Date, and Genre are required.']);
+            exit;
+        }
+
+        $data = [
+            'title' => $title,
+            'author' => $author,
+            'isbn' => $isbn,
+            'publication_date' => $publicationDate,
+            'genre_id' => $genreId,
+            'availability_status' => $availability,
+            'description' => $description,
+            'cover_image_url' => $coverUrl
+        ];
+        $response = callSupabase('PATCH', 'ebooks', $data, ['ebook_id' => 'eq.' . $ebookId]);
+
+        if ($response['status'] === 204) {
+            echo json_encode(['success' => true, 'message' => 'Book updated successfully!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to update book: ' . ($response['data']['message'] ?? 'Unknown error')]);
+        }
+        break;
+
+    case 'deleteEbook':
+        $ebookId = $_GET['id'] ?? '';
+        if (empty($ebookId)) {
+            echo json_encode(['success' => false, 'message' => 'Book ID is required.']);
+            exit;
+        }
+        $response = callSupabase('DELETE', 'ebooks', null, ['ebook_id' => 'eq.' . $ebookId]);
+
+        if ($response['status'] === 204) {
+            echo json_encode(['success' => true, 'message' => 'Book deleted successfully!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to delete book: ' . ($response['data']['message'] ?? 'Unknown error')]);
+        }
+        break;
+
+    case 'exportReportsExcel':
+        // Fetch all data needed for the comprehensive report
+        $reportsResponse = callSupabase('GET', 'ebooks', null, [], 'count');
+        $usersResponse = callSupabase('GET', 'users', null, [], 'count');
+        $reviewsResponse = callSupabase('GET', 'reviews', null, [], 'count');
+        $approvedReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.approved'], 'count');
+        $pendingReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.pending'], 'count');
+        $rejectedReviewsResponse = callSupabase('GET', 'reviews', null, ['status' => 'eq.rejected'], 'count');
+
+        $allBooksResponse = callSupabase('GET', 'ebooks', null, [], '*,genres(genre_name)');
+        $allReviewsResponse = callSupabase('GET', 'reviews', null, [], '*');
+
+        // Prepare all reviews with details for export
+        $allReviewsWithDetails = [];
+        foreach ($allReviewsResponse['data'] as $review) {
+            $ebookResponse = callSupabase('GET', 'ebooks', null, ['ebook_id' => 'eq.' . $review['ebook_id']], 'title,author');
+            $userResponse = callSupabase('GET', 'users', null, ['user_id' => 'eq.' . $review['user_id']], 'name,email');
+            
+            $review['ebook_title'] = $ebookResponse['data'][0]['title'] ?? 'Unknown Ebook';
+            $review['ebook_author'] = $ebookResponse['data'][0]['author'] ?? 'Unknown Author';
+            $review['user_name'] = $userResponse['data'][0]['name'] ?? 'Unknown User';
+            $review['user_email'] = $userResponse['data'][0]['email'] ?? 'N/A';
+            $allReviewsWithDetails[] = $review;
+        }
+
+        // Set headers for CSV download
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="booknest_reports_' . date('Ymd_His') . '.csv"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        // --- Summary Report ---
+        fputcsv($output, ['BookNest System Reports Summary']);
+        fputcsv($output, ['Metric', 'Count']);
+        fputcsv($output, ['Total Books', $reportsResponse['data'][0]['count'] ?? 0]);
+        fputcsv($output, ['Total Users', $usersResponse['data'][0]['count'] ?? 0]);
+        fputcsv($output, ['Total Reviews', $reviewsResponse['data'][0]['count'] ?? 0]);
+        fputcsv($output, ['Approved Reviews', $approvedReviewsResponse['data'][0]['count'] ?? 0]);
+        fputcsv($output, ['Pending Reviews', $pendingReviewsResponse['data'][0]['count'] ?? 0]);
+        fputcsv($output, ['Rejected Reviews', $rejectedReviewsResponse['data'][0]['count'] ?? 0]);
+        fputcsv($output, []); // Empty row for separation
+
+        // --- All Books Report ---
+        fputcsv($output, ['All Books in System']);
+        $bookHeader = ['Book ID', 'Title', 'Author', 'ISBN', 'Publication Date', 'Genre', 'Availability Status', 'Description', 'Cover Image URL'];
+        fputcsv($output, $bookHeader);
+        foreach ($allBooksResponse['data'] as $book) {
+            $row = [
+                $book['ebook_id'] ?? '',
+                $book['title'] ?? '',
+                $book['author'] ?? '',
+                $book['isbn'] ?? '',
+                $book['publication_date'] ?? '',
+                $book['genres']['genre_name'] ?? 'N/A', // Access genre name from joined data
+                $book['availability_status'] ?? '',
+                $book['description'] ?? '',
+                $book['cover_image_url'] ?? ''
+            ];
+            fputcsv($output, $row);
+        }
+        fputcsv($output, []); // Empty row for separation
+
+        // --- All Reviews Report ---
+        fputcsv($output, ['All Reviews in System']);
+        $reviewHeader = ['Review ID', 'Ebook Title', 'Ebook Author', 'User Name', 'User Email', 'Rating', 'Review Text', 'Review Date', 'Status'];
+        fputcsv($output, $reviewHeader);
+        foreach ($allReviewsWithDetails as $review) {
+            $row = [
+                $review['review_id'] ?? '',
+                $review['ebook_title'] ?? '',
+                $review['ebook_author'] ?? '',
+                $review['user_name'] ?? '',
+                $review['user_email'] ?? '',
+                $review['rating'] ?? '',
+                $review['review_text'] ?? '',
+                $review['review_date'] ?? '',
+                $review['status'] ?? ''
+            ];
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        exit; // Terminate script after file download
 
     default:
         echo json_encode(['success' => false, 'message' => 'Invalid action.']);

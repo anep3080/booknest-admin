@@ -3,15 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | BookNest</title>
+    <title>Manager Dashboard | BookNest</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css"> </head>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN for charting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 <body>
     <div class="admin-container">
         <header class="admin-header">
-            <h1><i class="fas fa-book"></i> BookNest Admin Dashboard</h1> <div class="admin-info">
-                <span class="admin-name"><i class="fas fa-user-shield"></i> admin</span> <button class="btn btn-danger" onclick="window.location.href='admin_login.html'"> <i class="fas fa-sign-out-alt"></i> Logout
+            <h1><i class="fas fa-book"></i> BookNest Manager Dashboard</h1>
+            <div class="admin-info">
+                <span class="admin-name"><i class="fas fa-user-shield"></i> admin</span>
+                <button class="btn btn-danger" onclick="window.location.href='admin_login.html'">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
         </header>
@@ -21,8 +27,8 @@
                 <button class="tab-btn active" onclick="showTab('users-tab')">
                     <i class="fas fa-users"></i> Manage Users
                 </button>
-                <button class="tab-btn" onclick="showTab('categories-tab')">
-                    <i class="fas fa-tags"></i> Manage Categories/Genres
+                <button class="tab-btn" onclick="showTab('reports-tab')">
+                    <i class="fas fa-chart-bar"></i> View Reports
                 </button>
             </div>
         </div>
@@ -72,30 +78,118 @@
             </div>
         </div>
 
-        <div id="categories-tab" class="tab-content">
+        <div id="reports-tab" class="tab-content">
             <div class="card-container">
                 <div class="card-header">
-                    <h2><i class="fas fa-tags"></i> Manage Categories/Genres</h2>
+                    <h2><i class="fas fa-chart-pie"></i> System Reports Overview</h2>
+                    <button class="btn btn-success" onclick="exportReportsExcel()">
+                        <i class="fas fa-file-excel"></i> Export All Reports
+                    </button>
                 </div>
-                <div class="category-management">
-                    <div class="add-category-form">
-                        <h3>Add New Category</h3>
-                        <div class="form-group">
-                            <label for="newCategoryName">Category Name</label>
-                            <input type="text" id="newCategoryName" placeholder="e.g., Fiction, Science, History">
-                        </div>
-                        <button class="btn btn-primary" onclick="addCategory()">
-                            <i class="fas fa-plus-circle"></i> Add Category
-                        </button>
-                        <div id="addCategoryMessage" class="message"></div>
+                <div class="report-grid">
+                    <div class="report-card">
+                        <h3>Total Books</h3>
+                        <p id="totalBooksCount"><i class="fas fa-book-open"></i> Loading...</p>
                     </div>
+                    <div class="report-card">
+                        <h3>Total Users</h3>
+                        <p id="totalUsersCount"><i class="fas fa-users"></i> Loading...</p>
+                    </div>
+                    <div class="report-card">
+                        <h3>Total Reviews</h3>
+                        <p id="totalReviewsCount"><i class="fas fa-comments"></i> Loading...</p>
+                    </div>
+                    <div class="report-card">
+                        <h3>Approved Reviews</h3>
+                        <p id="approvedReviewsCount"><i class="fas fa-check-circle"></i> Loading...</p>
+                    </div>
+                    <div class="report-card">
+                        <h3>Pending Reviews</h3>
+                        <p id="pendingReviewsCount"><i class="fas fa-hourglass-half"></i> Loading...</p>
+                    </div>
+                </div>
+                <div id="reportsMessage" class="message"></div>
+            </div>
 
-                    <div class="category-list">
-                        <h3>Existing Categories</h3>
-                        <ul id="categoriesList">
-                            </ul>
-                        <div id="categoryListMessage" class="message"></div>
-                    </div>
+            <div class="card-container">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line"></i> Review Status Distribution</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="reviewStatusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card-container">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-bar"></i> Book Genre Distribution</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="genreDistributionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card-container">
+                <div class="card-header">
+                    <h2><i class="fas fa-book"></i> All Books in System</h2>
+                    <span class="badge" id="allBooksCountBadge"></span>
+                </div>
+                <div class="search-box mb-4">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="all-books-search" placeholder="Search books by title or author...">
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>ISBN</th>
+                                <th>Genre</th>
+                                <th>Pub. Date</th>
+                                <th>Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allBooksTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="allBooksEmptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-book-open"></i>
+                    <p>No books found matching your search or in the system.</p>
+                </div>
+            </div>
+
+            <div class="card-container">
+                <div class="card-header">
+                    <h2><i class="fas fa-comments"></i> All Reviews in System</h2>
+                    <span class="badge" id="allReviewsCountBadge"></span>
+                </div>
+                <div class="search-box mb-4">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="all-reviews-search" placeholder="Search reviews by user or text...">
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Review ID</th>
+                                <th>Ebook Title</th>
+                                <th>User</th>
+                                <th>Rating</th>
+                                <th>Review Text</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allReviewsTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="allReviewsEmptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-comment-slash"></i>
+                    <p>No reviews found matching your search or in the system.</p>
                 </div>
             </div>
         </div>
@@ -200,29 +294,6 @@
             </div>
         </div>
     </div>
-
-    <div id="editCategoryModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-edit"></i> Edit Category Name</h3>
-            </div>
-            <div class="modal-body">
-                <form id="editCategoryForm">
-                    <input type="hidden" id="editCategoryId">
-                    <div class="form-group">
-                        <label for="editCategoryName">Category Name</label>
-                        <input type="text" id="editCategoryName" required>
-                    </div>
-                    <div id="editCategoryMessage" class="message"></div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-light" onclick="hideEditCategoryModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveCategoryChanges()">
-                    <i class="fas fa-save"></i> Save Changes
-                </button>
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script> </body>
+    <script src="script.js"></script>
+</body>
 </html>
